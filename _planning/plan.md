@@ -2,6 +2,8 @@
 
 We have a number of genomic datasets located in the `data` folder.
 
+Information about these datasets is in /data/datasets_info.md
+
 Store relevant workings in `output` folder and final results in the `results` folder.
 
 We want AI to explore these datasets, ask us any questions to find out the following:

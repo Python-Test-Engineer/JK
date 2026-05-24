@@ -1,0 +1,47 @@
+{
+  "dataset": "Dataset_02_dummy_dataset_b",
+  "input_path": "C:\\Users\\mrcra\\Desktop\\JK\\data\\dummy_dataset_b.csv",
+  "rows": 10,
+  "columns": 9,
+  "column_names": [
+    "sample_id",
+    "cohort",
+    "condition",
+    "gene_MYC",
+    "gene_ALK",
+    "gene_PTEN",
+    "gene_BRAF",
+    "copy_number_signal",
+    "age"
+  ],
+  "numeric_columns": [
+    "gene_MYC",
+    "gene_ALK",
+    "gene_PTEN",
+    "gene_BRAF",
+    "copy_number_signal",
+    "age"
+  ],
+  "missing_values_per_column": {
+    "sample_id": 0,
+    "cohort": 0,
+    "condition": 0,
+    "gene_MYC": 0,
+    "gene_ALK": 0,
+    "gene_PTEN": 0,
+    "gene_BRAF": 0,
+    "copy_number_signal": 0,
+    "age": 0
+  },
+  "dtypes": {
+    "sample_id": "str",
+    "cohort": "str",
+    "condition": "str",
+    "gene_MYC": "float64",
+    "gene_ALK": "float64",
+    "gene_PTEN": "float64",
+    "gene_BRAF": "float64",
+    "copy_number_signal": "float64",
+    "age": "int64"
+  }
+}

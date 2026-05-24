@@ -9,8 +9,7 @@ This file is the fast-start runbook for testing and then operating the orchestra
   - `orchestration/tasks/profile_dataset.py`
   - `orchestration/tasks/hypothesis_scan.py`
   - `orchestration/tasks/validate_findings.py`
-- Agent config: `_planning/agents.example.json`
-- Pipeline config: `_planning/pipeline.example.json`
+- Plan file: `_planning/plan.md`
 - Dummy test datasets:
   - `data/dummy_dataset_a.csv`
   - `data/dummy_dataset_b.csv`
@@ -56,13 +55,16 @@ python orchestration/agent_orchestrator.py
 ## 6. How To Switch From Dummy To Real Data
 
 1. Place real CSVs in `data/`.
-2. Update `_planning/pipeline.example.json`:
-- Replace `dummy_dataset_a.csv` and `dummy_dataset_b.csv` with real filenames.
-- Adjust dataset labels and threshold (`min_score`) as needed.
-3. Re-run:
+2. Re-run:
 
 ```powershell
 python orchestration/agent_orchestrator.py
+```
+
+Optional tuning:
+
+```powershell
+python orchestration/agent_orchestrator.py --min-score 1.2 --max-workers 4
 ```
 
 ## 7. What You (Lead Researcher) Need To Provide Next

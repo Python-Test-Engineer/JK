@@ -1,7 +1,8 @@
-"""Dependency-aware agent orchestration with parallel task execution.
+"""Dependency-aware agent orchestration with automatic dataset discovery.
 
-This runner executes a pipeline of agent tasks in parallel when dependencies
-allow it, writes per-task logs, and maintains a status markdown for visibility.
+Drop CSV files into `data/` and run this module. The orchestrator builds a
+default pipeline from discovered datasets and executes dependent tasks in
+parallel while writing progress updates and task logs.
 """
 
 from __future__ import annotations
@@ -9,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -50,44 +52,154 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
 
 
-def load_json(path: Path) -> dict[str, Any]:
-    with path.open("r", encoding="utf-8") as handle:
-        return json.load(handle)
+def append_status(status_path: Path, lines: list[str]) -> None:
+    status_path.parent.mkdir(parents=True, exist_ok=True)
+    with status_path.open("a", encoding="utf-8") as handle:
+        handle.write("\n".join(lines) + "\n")
 
 
-def load_agents(path: Path) -> dict[str, AgentDefinition]:
-    raw = load_json(path)
-    agents: dict[str, AgentDefinition] = {}
-    for item in raw.get("agents", []):
-        name = item["name"]
-        agents[name] = AgentDefinition(
-            name=name,
-            description=item.get("description", ""),
-            command_template=item["command_template"],
-            cwd=item.get("cwd"),
-            env=item.get("env", {}),
+def slugify(text: str) -> str:
+    slug = re.sub(r"[^a-zA-Z0-9]+", "_", text.strip()).strip("_")
+    if not slug:
+        slug = "dataset"
+    if slug[0].isdigit():
+        slug = f"dataset_{slug}"
+    return slug.lower()
+
+
+def list_csv_files(data_dir: Path) -> list[Path]:
+    return sorted(path for path in data_dir.glob("*.csv") if path.is_file())
+
+
+def read_plan_excerpt(plan_path: Path, max_lines: int = 8) -> str:
+    if not plan_path.exists():
+        return "(plan file missing)"
+    lines = plan_path.read_text(encoding="utf-8").splitlines()
+    non_empty = [line.strip() for line in lines if line.strip()]
+    return " | ".join(non_empty[:max_lines]) if non_empty else "(plan file is empty)"
+
+
+def default_agents() -> dict[str, AgentDefinition]:
+    return {
+        "dataset_profile_agent": AgentDefinition(
+            name="dataset_profile_agent",
+            description="Profiles genomic datasets and emits shape/schema/QC hints.",
+            command_template=(
+                'python -m orchestration.tasks.profile_dataset --input "{input_path}" '
+                '--dataset "{dataset_name}" --output "{output_path}"'
+            ),
+        ),
+        "hypothesis_scan_agent": AgentDefinition(
+            name="hypothesis_scan_agent",
+            description="Runs exploratory scans and candidate signal extraction.",
+            command_template=(
+                'python -m orchestration.tasks.hypothesis_scan --input "{input_path}" '
+                '--dataset "{dataset_name}" --mode "{mode}" --output "{output_path}"'
+            ),
+        ),
+        "validation_agent": AgentDefinition(
+            name="validation_agent",
+            description="Validates candidate findings across all dataset scans.",
+            command_template=(
+                'python -m orchestration.tasks.validate_findings --dataset "{dataset_name}" '
+                '--inputs {inputs_clause} --min-score {min_score} --output "{output_path}"'
+            ),
+        ),
+        "team_report_agent": AgentDefinition(
+            name="team_report_agent",
+            description="Generates team-facing markdown and HTML reports in results.",
+            command_template=(
+                'python -m orchestration.tasks.report_team --validated-input "{validated_input}" '
+                '--report-base "{report_base}" --results-dir "{results_dir}"'
+            ),
+        ),
+    }
+
+
+def build_default_pipeline(
+    csv_files: list[Path],
+    min_score: float,
+    max_workers: int,
+    fail_fast: bool,
+    report_base: str,
+) -> PipelineSpec:
+    tasks: list[TaskSpec] = []
+    scan_task_ids: list[str] = []
+    scan_outputs: list[Path] = []
+    seen_names: dict[str, int] = {}
+
+    for index, csv_path in enumerate(csv_files, start=1):
+        base = slugify(csv_path.stem)
+        seen_names[base] = seen_names.get(base, 0) + 1
+        suffix = seen_names[base]
+        unique = f"{base}_{suffix}" if suffix > 1 else base
+        dataset_name = f"Dataset_{index:02d}_{unique}"
+
+        profile_task_id = f"profile_{unique}"
+        scan_task_id = f"scan_{unique}"
+        profile_output = Path("output/intermediate") / f"{dataset_name}_profile.json"
+        scan_output = Path("output/intermediate") / f"{dataset_name}_scan.json"
+
+        tasks.append(
+            TaskSpec(
+                task_id=profile_task_id,
+                agent="dataset_profile_agent",
+                args={
+                    "input_path": str(csv_path.as_posix()),
+                    "dataset_name": dataset_name,
+                    "output_path": str(profile_output.as_posix()),
+                },
+                retries=1,
+            )
         )
-    return agents
+        tasks.append(
+            TaskSpec(
+                task_id=scan_task_id,
+                agent="hypothesis_scan_agent",
+                args={
+                    "input_path": str(csv_path.as_posix()),
+                    "dataset_name": dataset_name,
+                    "mode": "broad",
+                    "output_path": str(scan_output.as_posix()),
+                },
+                depends_on=[profile_task_id],
+            )
+        )
+        scan_task_ids.append(scan_task_id)
+        scan_outputs.append(scan_output)
 
-
-def load_pipeline(path: Path) -> PipelineSpec:
-    raw = load_json(path)
-    tasks = [
+    inputs_clause = " ".join(f'"{path.as_posix()}"' for path in scan_outputs)
+    validated_output = Path("output/intermediate/joint_analysis_validated.json")
+    tasks.append(
         TaskSpec(
-            task_id=item["id"],
-            agent=item["agent"],
-            args=item.get("args", {}),
-            depends_on=item.get("depends_on", []),
-            retries=int(item.get("retries", 0)),
-            timeout_sec=item.get("timeout_sec"),
+            task_id="validate_joint_findings",
+            agent="validation_agent",
+            args={
+                "dataset_name": "joint_analysis",
+                "inputs_clause": inputs_clause,
+                "min_score": min_score,
+                "output_path": str(validated_output.as_posix()),
+            },
+            depends_on=scan_task_ids,
         )
-        for item in raw.get("tasks", [])
-    ]
-    max_workers = int(raw.get("max_workers", os.cpu_count() or 4))
+    )
+    tasks.append(
+        TaskSpec(
+            task_id="publish_team_report",
+            agent="team_report_agent",
+            args={
+                "validated_input": str(validated_output.as_posix()),
+                "report_base": report_base,
+                "results_dir": "results",
+            },
+            depends_on=["validate_joint_findings"],
+        )
+    )
+
     return PipelineSpec(
-        name=raw.get("name", "unnamed_pipeline"),
+        name="genomic_investigation_auto_pipeline",
         max_workers=max(1, max_workers),
-        fail_fast=bool(raw.get("fail_fast", True)),
+        fail_fast=fail_fast,
         tasks=tasks,
     )
 
@@ -116,12 +228,6 @@ def render_command(agent: AgentDefinition, args: dict[str, Any]) -> str:
         raise ValueError(
             f"Missing command argument '{missing}' for agent '{agent.name}'."
         ) from error
-
-
-def append_status(status_path: Path, lines: list[str]) -> None:
-    status_path.parent.mkdir(parents=True, exist_ok=True)
-    with status_path.open("a", encoding="utf-8") as handle:
-        handle.write("\n".join(lines) + "\n")
 
 
 def run_task(
@@ -181,6 +287,9 @@ def orchestrate(
     logs_dir: Path,
     summary_dir: Path,
     dry_run: bool,
+    plan_path: Path,
+    plan_excerpt: str,
+    data_files: list[Path],
 ) -> int:
     task_map = {task.task_id: task for task in pipeline.tasks}
     pending = set(task_map)
@@ -198,6 +307,9 @@ def orchestrate(
             f"- Max workers: {pipeline.max_workers}",
             f"- Fail fast: {pipeline.fail_fast}",
             f"- Dry run: {dry_run}",
+            f"- Plan file: `{plan_path.as_posix()}`",
+            f"- Plan excerpt: {plan_excerpt}",
+            f"- Input CSV files: {', '.join(path.name for path in data_files)}",
         ],
     )
 
@@ -318,6 +430,8 @@ def orchestrate(
         "generated_at": utc_now(),
         "max_workers": pipeline.max_workers,
         "fail_fast": pipeline.fail_fast,
+        "plan_path": str(plan_path.as_posix()),
+        "input_files": [str(path.as_posix()) for path in data_files],
         "completed": sorted(completed),
         "failed": sorted(failed),
         "skipped": sorted(skipped),
@@ -341,17 +455,39 @@ def orchestrate(
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Parallel, dependency-aware agent orchestrator."
+        description="Parallel genomic orchestrator with automatic CSV discovery."
     )
     parser.add_argument(
-        "--agents",
-        default="_planning/agents.example.json",
-        help="Path to agent definition JSON.",
+        "--data-dir",
+        default="data",
+        help="Directory containing input CSV datasets.",
     )
     parser.add_argument(
-        "--pipeline",
-        default="_planning/pipeline.example.json",
-        help="Path to pipeline definition JSON.",
+        "--plan",
+        default="_planning/plan.md",
+        help="Plan markdown file used to provide run context.",
+    )
+    parser.add_argument(
+        "--min-score",
+        type=float,
+        default=1.0,
+        help="Minimum absolute signal score used during validation.",
+    )
+    parser.add_argument(
+        "--report-base",
+        default="joint_analysis_report",
+        help="Base filename for report outputs in results/.",
+    )
+    parser.add_argument(
+        "--max-workers",
+        type=int,
+        default=min(4, os.cpu_count() or 4),
+        help="Maximum parallel workers.",
+    )
+    parser.add_argument(
+        "--fail-fast",
+        action="store_true",
+        help="Stop scheduling pending tasks after the first unrecoverable failure.",
     )
     parser.add_argument(
         "--status",
@@ -379,16 +515,36 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv if argv is not None else sys.argv[1:])
     repo_root = Path.cwd()
-    agents_path = repo_root / args.agents
-    pipeline_path = repo_root / args.pipeline
+    data_dir = repo_root / args.data_dir
+    plan_path = repo_root / args.plan
     status_path = repo_root / args.status
     logs_dir = repo_root / args.logs_dir
     summary_dir = repo_root / args.summary_dir
 
-    agents = load_agents(agents_path)
-    pipeline = load_pipeline(pipeline_path)
+    csv_files = list_csv_files(data_dir)
+    if not csv_files:
+        append_status(
+            status_path,
+            [
+                f"## [{utc_now()}] Pipeline Aborted: no CSV files found",
+                f"- Data directory checked: `{data_dir.as_posix()}`",
+                "- Add one or more `.csv` files and rerun the command.",
+            ],
+        )
+        print(f"No CSV files found in {data_dir}. Add data files and rerun.")
+        return 2
+
+    agents = default_agents()
+    pipeline = build_default_pipeline(
+        csv_files=csv_files,
+        min_score=args.min_score,
+        max_workers=args.max_workers,
+        fail_fast=args.fail_fast,
+        report_base=args.report_base,
+    )
     validate_pipeline(pipeline, agents)
 
+    plan_excerpt = read_plan_excerpt(plan_path)
     return orchestrate(
         agents=agents,
         pipeline=pipeline,
@@ -397,6 +553,9 @@ def main(argv: list[str] | None = None) -> int:
         logs_dir=logs_dir,
         summary_dir=summary_dir,
         dry_run=args.dry_run,
+        plan_path=plan_path,
+        plan_excerpt=plan_excerpt,
+        data_files=csv_files,
     )
 
 

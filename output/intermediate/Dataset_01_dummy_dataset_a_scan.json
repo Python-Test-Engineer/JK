@@ -1,0 +1,38 @@
+{
+  "dataset": "Dataset_01_dummy_dataset_a",
+  "mode": "broad",
+  "input_path": "C:\\Users\\mrcra\\Desktop\\JK\\data\\dummy_dataset_a.csv",
+  "candidate_count": 6,
+  "top_candidates": [
+    {
+      "feature": "age",
+      "mean": 61.8,
+      "std": 3.340658617698013,
+      "signal_score": 18.49934610322018
+    },
+    {
+      "feature": "gene_KRAS",
+      "mean": 2.8500000000000005,
+      "std": 0.7310950690573695,
+      "signal_score": 3.898261822195517
+    },
+    {
+      "feature": "gene_BRCA1",
+      "mean": 6.3999999999999995,
+      "std": 1.7233687939614086,
+      "signal_score": 3.713656658233338
+    },
+    {
+      "feature": "gene_EGFR",
+      "mean": 4.36,
+      "std": 1.3886684269471963,
+      "signal_score": 3.139698370218717
+    },
+    {
+      "feature": "gene_TP53",
+      "mean": 9.17,
+      "std": 3.21,
+      "signal_score": 2.8566978184247045
+    }
+  ]
+}

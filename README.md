@@ -65,9 +65,8 @@ Once provided, the analysis cycle can start and `output/status.md` will be maint
 A dependency-aware parallel orchestrator is now included at:
 - `orchestration/agent_orchestrator.py`
 
-Supporting configuration:
-- `_planning/agents.example.json` (agent registry and command templates)
-- `_planning/pipeline.example.json` (task graph, dependencies, retries, max workers)
+The orchestrator now auto-builds its task graph directly from CSV files in `data/`.
+No agent or pipeline JSON setup is required.
 
 Run a dry run (plan validation only):
 
@@ -80,6 +79,13 @@ Run the pipeline:
 ```powershell
 python orchestration/agent_orchestrator.py
 ```
+
+This one command:
+- Reads context from `_planning/plan.md`
+- Discovers all `data/*.csv` files
+- Profiles and scans each dataset in parallel
+- Validates merged findings
+- Writes reports into `results/`
 
 Execution artifacts:
 - `output/status.md`: timestamped task lifecycle updates.
