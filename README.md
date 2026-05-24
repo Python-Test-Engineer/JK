@@ -63,7 +63,7 @@ Once provided, the analysis cycle can start and `output/status.md` will be maint
 ## Agent Orchestration (Parallel Execution)
 
 A dependency-aware parallel orchestrator is now included at:
-- `orchestration/agent_orchestrator.py`
+- `src/agent_orchestrator.py`
 
 The orchestrator now auto-builds its task graph directly from CSV files in `data/`.
 No agent or pipeline JSON setup is required.
@@ -71,13 +71,13 @@ No agent or pipeline JSON setup is required.
 Run a dry run (plan validation only):
 
 ```powershell
-python orchestration/agent_orchestrator.py --dry-run
+python src/agent_orchestrator.py --dry-run
 ```
 
 Run the pipeline:
 
 ```powershell
-python orchestration/agent_orchestrator.py
+python src/agent_orchestrator.py
 ```
 
 This one command:

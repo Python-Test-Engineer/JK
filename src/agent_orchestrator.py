@@ -85,7 +85,7 @@ def default_agents() -> dict[str, AgentDefinition]:
             name="dataset_profile_agent",
             description="Profiles genomic datasets and emits shape/schema/QC hints.",
             command_template=(
-                'python -m orchestration.tasks.profile_dataset --input "{input_path}" '
+                'python -m src.tasks.profile_dataset --input "{input_path}" '
                 '--dataset "{dataset_name}" --output "{output_path}"'
             ),
         ),
@@ -93,7 +93,7 @@ def default_agents() -> dict[str, AgentDefinition]:
             name="hypothesis_scan_agent",
             description="Runs exploratory scans and candidate signal extraction.",
             command_template=(
-                'python -m orchestration.tasks.hypothesis_scan --input "{input_path}" '
+                'python -m src.tasks.hypothesis_scan --input "{input_path}" '
                 '--dataset "{dataset_name}" --mode "{mode}" --output "{output_path}"'
             ),
         ),
@@ -101,7 +101,7 @@ def default_agents() -> dict[str, AgentDefinition]:
             name="validation_agent",
             description="Validates candidate findings across all dataset scans.",
             command_template=(
-                'python -m orchestration.tasks.validate_findings --dataset "{dataset_name}" '
+                'python -m src.tasks.validate_findings --dataset "{dataset_name}" '
                 '--inputs {inputs_clause} --min-score {min_score} --output "{output_path}"'
             ),
         ),
@@ -109,7 +109,7 @@ def default_agents() -> dict[str, AgentDefinition]:
             name="team_report_agent",
             description="Generates team-facing markdown and HTML reports in results.",
             command_template=(
-                'python -m orchestration.tasks.report_team --validated-input "{validated_input}" '
+                'python -m src.tasks.report_team --validated-input "{validated_input}" '
                 '--report-base "{report_base}" --results-dir "{results_dir}"'
             ),
         ),

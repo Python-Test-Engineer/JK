@@ -4,11 +4,11 @@ This file is the fast-start runbook for testing and then operating the orchestra
 
 ## 1. What Is Already In Place
 
-- Parallel orchestrator: `orchestration/agent_orchestrator.py`
+- Parallel orchestrator: `src/agent_orchestrator.py`
 - Task executables:
-  - `orchestration/tasks/profile_dataset.py`
-  - `orchestration/tasks/hypothesis_scan.py`
-  - `orchestration/tasks/validate_findings.py`
+  - `src/tasks/profile_dataset.py`
+  - `src/tasks/hypothesis_scan.py`
+  - `src/tasks/validate_findings.py`
 - Plan file: `_planning/plan.md`
 - Dummy test datasets:
   - `data/dummy_dataset_a.csv`
@@ -27,13 +27,13 @@ pip install pandas
 This validates DAG dependencies and prints the planned commands without executing tasks:
 
 ```powershell
-python orchestration/agent_orchestrator.py --dry-run
+python src/agent_orchestrator.py --dry-run
 ```
 
 ## 4. Run End-to-End Test (Dummy Data)
 
 ```powershell
-python orchestration/agent_orchestrator.py
+python src/agent_orchestrator.py
 ```
 
 ## 5. Where Outputs Appear
@@ -58,13 +58,13 @@ python orchestration/agent_orchestrator.py
 2. Re-run:
 
 ```powershell
-python orchestration/agent_orchestrator.py
+python src/agent_orchestrator.py
 ```
 
 Optional tuning:
 
 ```powershell
-python orchestration/agent_orchestrator.py --min-score 1.2 --max-workers 4
+python src/agent_orchestrator.py --min-score 1.2 --max-workers 4
 ```
 
 ## 7. What You (Lead Researcher) Need To Provide Next
