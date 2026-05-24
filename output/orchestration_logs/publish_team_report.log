@@ -1,0 +1,10 @@
+[2026-05-24 10:32:56 UTC] Attempt 1
+Command: python -m orchestration.tasks.report_team --validated-input output/intermediate/joint_analysis_validated.json --report-base joint_analysis_report --results-dir results
+CWD: C:\Users\mrcra\Desktop\JK
+--- STDOUT ---
+Wrote report files: results\joint_analysis_report.md and results\joint_analysis_report.html
+
+--- STDERR ---
+
+Exit code: 0
+

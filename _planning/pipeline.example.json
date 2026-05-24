@@ -1,0 +1,80 @@
+{
+  "name": "genomic_investigation_parallel_pipeline",
+  "max_workers": 3,
+  "fail_fast": false,
+  "tasks": [
+    {
+      "id": "profile_dataset_a",
+      "agent": "dataset_profile_agent",
+      "args": {
+        "dataset_name": "Dataset_A",
+        "dataset_file": "dummy_dataset_a.csv"
+      },
+      "depends_on": [],
+      "retries": 1
+    },
+    {
+      "id": "profile_dataset_b",
+      "agent": "dataset_profile_agent",
+      "args": {
+        "dataset_name": "Dataset_B",
+        "dataset_file": "dummy_dataset_b.csv"
+      },
+      "depends_on": [],
+      "retries": 1
+    },
+    {
+      "id": "scan_dataset_a",
+      "agent": "hypothesis_scan_agent",
+      "args": {
+        "dataset_name": "Dataset_A",
+        "dataset_file": "dummy_dataset_a.csv",
+        "mode": "broad"
+      },
+      "depends_on": [
+        "profile_dataset_a"
+      ],
+      "retries": 0
+    },
+    {
+      "id": "scan_dataset_b",
+      "agent": "hypothesis_scan_agent",
+      "args": {
+        "dataset_name": "Dataset_B",
+        "dataset_file": "dummy_dataset_b.csv",
+        "mode": "broad"
+      },
+      "depends_on": [
+        "profile_dataset_b"
+      ],
+      "retries": 0
+    },
+    {
+      "id": "validate_joint_findings",
+      "agent": "validation_agent",
+      "args": {
+        "dataset_name": "joint_analysis",
+        "input_a": "Dataset_A_scan.json",
+        "input_b": "Dataset_B_scan.json",
+        "min_score": 1.0
+      },
+      "depends_on": [
+        "scan_dataset_a",
+        "scan_dataset_b"
+      ],
+      "retries": 0
+    },
+    {
+      "id": "publish_team_report",
+      "agent": "team_report_agent",
+      "args": {
+        "validated_file": "joint_analysis_validated.json",
+        "report_base": "joint_analysis_report"
+      },
+      "depends_on": [
+        "validate_joint_findings"
+      ],
+      "retries": 0
+    }
+  ]
+}

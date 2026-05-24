@@ -1,0 +1,90 @@
+{
+  "pipeline": "genomic_investigation_parallel_pipeline",
+  "generated_at": "2026-05-24 10:32:56 UTC",
+  "max_workers": 3,
+  "fail_fast": false,
+  "completed": [
+    "profile_dataset_a",
+    "profile_dataset_b",
+    "publish_team_report",
+    "scan_dataset_a",
+    "scan_dataset_b",
+    "validate_joint_findings"
+  ],
+  "failed": [],
+  "skipped": [],
+  "results": [
+    {
+      "task_id": "profile_dataset_a",
+      "command": "python -m orchestration.tasks.profile_dataset --input data/dummy_dataset_a.csv --dataset Dataset_A --output output/intermediate/Dataset_A_profile.json",
+      "attempt": 1,
+      "started_at": "2026-05-24 10:32:54 UTC",
+      "ended_at": "2026-05-24 10:32:54 UTC",
+      "duration_sec": 0.94,
+      "returncode": 0,
+      "stdout": "{\n  \"dataset\": \"Dataset_A\",\n  \"input_path\": \"data\\\\dummy_dataset_a.csv\",\n  \"rows\": 10,\n  \"columns\": 9,\n  \"column_names\": [\n    \"sample_id\",\n    \"cohort\",\n    \"condition\",\n    \"gene_TP53\",\n    \"gene_BRCA1\",\n    \"gene_EGFR\",\n    \"gene_KRAS\",\n    \"mutation_burden\",\n    \"age\"\n  ],\n  \"numeric_columns\": [\n    \"gene_TP53\",\n    \"gene_BRCA1\",\n    \"gene_EGFR\",\n    \"gene_KRAS\",\n    \"mutation_burden\",\n    \"age\"\n  ],\n  \"missing_values_per_column\": {\n    \"sample_id\": 0,\n    \"cohort\": 0,\n    \"condition\": 0,\n    \"gene_TP53\": 0,\n    \"gene_BRCA1\": 0,\n    \"gene_EGFR\": 0,\n    \"gene_KRAS\": 0,\n    \"mutation_burden\": 0,\n    \"age\": 0\n  },\n  \"dtypes\": {\n    \"sample_id\": \"str\",\n    \"cohort\": \"str\",\n    \"condition\": \"str\",\n    \"gene_TP53\": \"float64\",\n    \"gene_BRCA1\": \"float64\",\n    \"gene_EGFR\": \"float64\",\n    \"gene_KRAS\": \"float64\",\n    \"mutation_burden\": \"int64\",\n    \"age\": \"int64\"\n  }\n}\n",
+      "stderr": "",
+      "log_path": "C:\\Users\\mrcra\\Desktop\\JK\\output\\orchestration_logs\\profile_dataset_a.log"
+    },
+    {
+      "task_id": "profile_dataset_b",
+      "command": "python -m orchestration.tasks.profile_dataset --input data/dummy_dataset_b.csv --dataset Dataset_B --output output/intermediate/Dataset_B_profile.json",
+      "attempt": 1,
+      "started_at": "2026-05-24 10:32:54 UTC",
+      "ended_at": "2026-05-24 10:32:54 UTC",
+      "duration_sec": 0.95,
+      "returncode": 0,
+      "stdout": "{\n  \"dataset\": \"Dataset_B\",\n  \"input_path\": \"data\\\\dummy_dataset_b.csv\",\n  \"rows\": 10,\n  \"columns\": 9,\n  \"column_names\": [\n    \"sample_id\",\n    \"cohort\",\n    \"condition\",\n    \"gene_MYC\",\n    \"gene_ALK\",\n    \"gene_PTEN\",\n    \"gene_BRAF\",\n    \"copy_number_signal\",\n    \"age\"\n  ],\n  \"numeric_columns\": [\n    \"gene_MYC\",\n    \"gene_ALK\",\n    \"gene_PTEN\",\n    \"gene_BRAF\",\n    \"copy_number_signal\",\n    \"age\"\n  ],\n  \"missing_values_per_column\": {\n    \"sample_id\": 0,\n    \"cohort\": 0,\n    \"condition\": 0,\n    \"gene_MYC\": 0,\n    \"gene_ALK\": 0,\n    \"gene_PTEN\": 0,\n    \"gene_BRAF\": 0,\n    \"copy_number_signal\": 0,\n    \"age\": 0\n  },\n  \"dtypes\": {\n    \"sample_id\": \"str\",\n    \"cohort\": \"str\",\n    \"condition\": \"str\",\n    \"gene_MYC\": \"float64\",\n    \"gene_ALK\": \"float64\",\n    \"gene_PTEN\": \"float64\",\n    \"gene_BRAF\": \"float64\",\n    \"copy_number_signal\": \"float64\",\n    \"age\": \"int64\"\n  }\n}\n",
+      "stderr": "",
+      "log_path": "C:\\Users\\mrcra\\Desktop\\JK\\output\\orchestration_logs\\profile_dataset_b.log"
+    },
+    {
+      "task_id": "scan_dataset_a",
+      "command": "python -m orchestration.tasks.hypothesis_scan --input data/dummy_dataset_a.csv --dataset Dataset_A --mode broad --output output/intermediate/Dataset_A_scan.json",
+      "attempt": 1,
+      "started_at": "2026-05-24 10:32:54 UTC",
+      "ended_at": "2026-05-24 10:32:55 UTC",
+      "duration_sec": 0.87,
+      "returncode": 0,
+      "stdout": "{\n  \"dataset\": \"Dataset_A\",\n  \"mode\": \"broad\",\n  \"input_path\": \"data\\\\dummy_dataset_a.csv\",\n  \"candidate_count\": 6,\n  \"top_candidates\": [\n    {\n      \"feature\": \"age\",\n      \"mean\": 61.8,\n      \"std\": 3.340658617698013,\n      \"signal_score\": 18.49934610322018\n    },\n    {\n      \"feature\": \"gene_KRAS\",\n      \"mean\": 2.8500000000000005,\n      \"std\": 0.7310950690573695,\n      \"signal_score\": 3.898261822195517\n    },\n    {\n      \"feature\": \"gene_BRCA1\",\n      \"mean\": 6.3999999999999995,\n      \"std\": 1.7233687939614086,\n      \"signal_score\": 3.713656658233338\n    },\n    {\n      \"feature\": \"gene_EGFR\",\n      \"mean\": 4.36,\n      \"std\": 1.3886684269471963,\n      \"signal_score\": 3.139698370218717\n    },\n    {\n      \"feature\": \"gene_TP53\",\n      \"mean\": 9.17,\n      \"std\": 3.21,\n      \"signal_score\": 2.8566978184247045\n    }\n  ]\n}\n",
+      "stderr": "",
+      "log_path": "C:\\Users\\mrcra\\Desktop\\JK\\output\\orchestration_logs\\scan_dataset_a.log"
+    },
+    {
+      "task_id": "scan_dataset_b",
+      "command": "python -m orchestration.tasks.hypothesis_scan --input data/dummy_dataset_b.csv --dataset Dataset_B --mode broad --output output/intermediate/Dataset_B_scan.json",
+      "attempt": 1,
+      "started_at": "2026-05-24 10:32:54 UTC",
+      "ended_at": "2026-05-24 10:32:55 UTC",
+      "duration_sec": 0.87,
+      "returncode": 0,
+      "stdout": "{\n  \"dataset\": \"Dataset_B\",\n  \"mode\": \"broad\",\n  \"input_path\": \"data\\\\dummy_dataset_b.csv\",\n  \"candidate_count\": 6,\n  \"top_candidates\": [\n    {\n      \"feature\": \"age\",\n      \"mean\": 57.5,\n      \"std\": 2.8722813232690143,\n      \"signal_score\": 20.018930427935555\n    },\n    {\n      \"feature\": \"gene_PTEN\",\n      \"mean\": 2.83,\n      \"std\": 0.911098238391448,\n      \"signal_score\": 3.106141442980121\n    },\n    {\n      \"feature\": \"gene_MYC\",\n      \"mean\": 7.63,\n      \"std\": 2.540885672359148,\n      \"signal_score\": 3.002889929287077\n    },\n    {\n      \"feature\": \"gene_BRAF\",\n      \"mean\": 4.8100000000000005,\n      \"std\": 1.6232375057273658,\n      \"signal_score\": 2.9632139351545144\n    },\n    {\n      \"feature\": \"copy_number_signal\",\n      \"mean\": 1.6700000000000004,\n      \"std\": 0.5967411499134276,\n      \"signal_score\": 2.7985333296417427\n    }\n  ]\n}\n",
+      "stderr": "",
+      "log_path": "C:\\Users\\mrcra\\Desktop\\JK\\output\\orchestration_logs\\scan_dataset_b.log"
+    },
+    {
+      "task_id": "validate_joint_findings",
+      "command": "python -m orchestration.tasks.validate_findings --dataset joint_analysis --input-a output/intermediate/Dataset_A_scan.json --input-b output/intermediate/Dataset_B_scan.json --min-score 1.0 --output output/intermediate/joint_analysis_validated.json",
+      "attempt": 1,
+      "started_at": "2026-05-24 10:32:55 UTC",
+      "ended_at": "2026-05-24 10:32:55 UTC",
+      "duration_sec": 0.15,
+      "returncode": 0,
+      "stdout": "{\n  \"dataset\": \"joint_analysis\",\n  \"inputs\": [\n    \"output\\\\intermediate\\\\Dataset_A_scan.json\",\n    \"output\\\\intermediate\\\\Dataset_B_scan.json\"\n  ],\n  \"threshold\": 1.0,\n  \"total_candidates_reviewed\": 10,\n  \"accepted_candidates\": [\n    {\n      \"feature\": \"age\",\n      \"mean\": 57.5,\n      \"std\": 2.8722813232690143,\n      \"signal_score\": 20.018930427935555,\n      \"source_dataset\": \"B\"\n    },\n    {\n      \"feature\": \"age\",\n      \"mean\": 61.8,\n      \"std\": 3.340658617698013,\n      \"signal_score\": 18.49934610322018,\n      \"source_dataset\": \"A\"\n    },\n    {\n      \"feature\": \"gene_KRAS\",\n      \"mean\": 2.8500000000000005,\n      \"std\": 0.7310950690573695,\n      \"signal_score\": 3.898261822195517,\n      \"source_dataset\": \"A\"\n    },\n    {\n      \"feature\": \"gene_BRCA1\",\n      \"mean\": 6.3999999999999995,\n      \"std\": 1.7233687939614086,\n      \"signal_score\": 3.713656658233338,\n      \"source_dataset\": \"A\"\n    },\n    {\n      \"feature\": \"gene_EGFR\",\n      \"mean\": 4.36,\n      \"std\": 1.3886684269471963,\n      \"signal_score\": 3.139698370218717,\n      \"source_dataset\": \"A\"\n    },\n    {\n      \"feature\": \"gene_PTEN\",\n      \"mean\": 2.83,\n      \"std\": 0.911098238391448,\n      \"signal_score\": 3.106141442980121,\n      \"source_dataset\": \"B\"\n    },\n    {\n      \"feature\": \"gene_MYC\",\n      \"mean\": 7.63,\n      \"std\": 2.540885672359148,\n      \"signal_score\": 3.002889929287077,\n      \"source_dataset\": \"B\"\n    },\n    {\n      \"feature\": \"gene_BRAF\",\n      \"mean\": 4.8100000000000005,\n      \"std\": 1.6232375057273658,\n      \"signal_score\": 2.9632139351545144,\n      \"source_dataset\": \"B\"\n    },\n    {\n      \"feature\": \"gene_TP53\",\n      \"mean\": 9.17,\n      \"std\": 3.21,\n      \"signal_score\": 2.8566978184247045,\n      \"source_dataset\": \"A\"\n    },\n    {\n      \"feature\": \"copy_number_signal\",\n      \"mean\": 1.6700000000000004,\n      \"std\": 0.5967411499134276,\n      \"signal_score\": 2.7985333296417427,\n      \"source_dataset\": \"B\"\n    }\n  ],\n  \"accepted_count\": 10\n}\n",
+      "stderr": "",
+      "log_path": "C:\\Users\\mrcra\\Desktop\\JK\\output\\orchestration_logs\\validate_joint_findings.log"
+    },
+    {
+      "task_id": "publish_team_report",
+      "command": "python -m orchestration.tasks.report_team --validated-input output/intermediate/joint_analysis_validated.json --report-base joint_analysis_report --results-dir results",
+      "attempt": 1,
+      "started_at": "2026-05-24 10:32:55 UTC",
+      "ended_at": "2026-05-24 10:32:56 UTC",
+      "duration_sec": 0.14,
+      "returncode": 0,
+      "stdout": "Wrote report files: results\\joint_analysis_report.md and results\\joint_analysis_report.html\n",
+      "stderr": "",
+      "log_path": "C:\\Users\\mrcra\\Desktop\\JK\\output\\orchestration_logs\\publish_team_report.log"
+    }
+  ]
+}

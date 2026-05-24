@@ -1,0 +1,11 @@
+flowchart TD
+    dataA["data/dummy_dataset_a.csv"] --> profileA["profile_dataset_a<br/>(profile_dataset.py)"]
+    profileA --> scanA["scan_dataset_a<br/>(hypothesis_scan.py)"]
+
+    dataB["data/dummy_dataset_b.csv"] --> profileB["profile_dataset_b<br/>(profile_dataset.py)"]
+    profileB --> scanB["scan_dataset_b<br/>(hypothesis_scan.py)"]
+
+    scanA --> validate["validate_joint_findings<br/>(validate_findings.py)<br/>output/intermediate/*.json"]
+    scanB --> validate
+
+    validate --> publish["publish_team_report<br/>(report_team.py)<br/>results/*.md + results/*.html"]
