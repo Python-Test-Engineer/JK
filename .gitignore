@@ -6,3 +6,4 @@ _planning/*.json
 data/*
 !data/.gitkeep
 !data/datasets_info.md
+src/__pycache__/
