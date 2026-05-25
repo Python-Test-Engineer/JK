@@ -22,7 +22,14 @@ At appropriate points create/update the file `output/status.md` with time stamps
 
 ## Agents
 
-Create any necesary agents, sub-agents, skills and commands to enable efficient and effective investigation. Create new folders for each of these which you will then reference.
+Where possible, create sub-agents to work in parallel but only if beneficial to the research.
+
+Create any necesary agents, sub-agents, skills and commands to enable efficient and effective investigation. Create new folders listed below for each of these which you will then reference:
+
+- agents
+- subagents
+- skills
+- commands
 
 Create an EXPLAIN_AGENTS.md file which explains what agents, sub-agents, commands and skills you have made for the user. Detail how the workflow wors with ascii diagrams as necessary.
 
